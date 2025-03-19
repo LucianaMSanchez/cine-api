@@ -27,6 +27,7 @@ public static class MoviesMapping
             Name = movie.Name,
             Country = movie.Country.Name,
             Director = movie.Director.Name,
+            DirectorId = movie.Director.Id,
             ImageProfileUrl = movie.ImageProfileUrl,
             ImageSliderUrl = movie.ImageSliderUrl,
             TrailerUrl = movie.TrailerUrl

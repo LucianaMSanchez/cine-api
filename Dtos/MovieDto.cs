@@ -9,4 +9,5 @@ public class MovieDto
     public string? TrailerUrl { get; set; }
     public string? Country { get; set; }
     public string? Director { get; set; }
+    public int? DirectorId { get; set; }
 }

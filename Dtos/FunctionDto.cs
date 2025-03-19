@@ -8,4 +8,5 @@ public class FunctionDto
     public DateOnly Date { get; set; }
     public TimeSpan Time { get; set; }
     public string? Director { get; set; }
+    public int? MovieId { get; set; }
 }

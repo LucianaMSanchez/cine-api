@@ -35,6 +35,7 @@ public static class FunctionMapping
             Date = function.Date,
             Time = function.Time,
             Movie = function.Movie!.Name,
+            MovieId = function.Movie!.Id,
             Director = function.Movie!.Director.Name
         };
 
@@ -48,6 +49,7 @@ public static class FunctionMapping
             Date = function.Date,
             Time = function.Time,
             Movie = function.Movie!.Name,
+            MovieId = function.Movie!.Id,
             Director = function.Movie!.Director.Name
         };
 

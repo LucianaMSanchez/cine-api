@@ -47,7 +47,7 @@ namespace cineApi.Endpoints
                     .AsNoTracking()
                     .ToList();
 
-                return functions.Count != 0 ? Results.Ok(functions) : Results.NotFound();
+                return Results.Ok(functions);
             });
 
             group.MapPost("/", (CreateFunctionDto newFunction, CineApiContext dbContext) =>
@@ -56,7 +56,7 @@ namespace cineApi.Endpoints
                 if (newFunction.Date < DateOnly.FromDateTime(currentDate) ||
                     (newFunction.Date == DateOnly.FromDateTime(currentDate) && newFunction.Time <= currentDate.TimeOfDay))
                 {
-                    return Results.BadRequest("The function date and time must be in the future.");
+                    return Results.BadRequest("La fecha y la hora de la función debe ser en el futuro.");
                 }
 
                 var directorFunctionsCount = dbContext.Functions
@@ -65,20 +65,20 @@ namespace cineApi.Endpoints
 
                 if (directorFunctionsCount >= 10)
                 {
-                    return Results.BadRequest("The director already has the maximum number of 10 functions for the day.");
+                    return Results.BadRequest("El director ya tiene el máximo de 10 funciones por día.");
                 }
 
                 var movie = dbContext.Movies.Include(m => m.Director).FirstOrDefault(m => m.Id == newFunction.MovieId);
                 if (movie is null)
                 {
-                    return Results.BadRequest("The movie does not exist.");
+                    return Results.BadRequest("La película no existe.");
                 }
 
                 if (movie.CountryId != 1 && dbContext.Functions
                     .Where(f => f.MovieId == newFunction.MovieId && f.Date == newFunction.Date)
                     .Count() >= 8)
                 {
-                    return Results.BadRequest("International movies are limited to 8 functions per day.");
+                    return Results.BadRequest("Las películas internacionales tienen un límite de 8 funcones por día.");
                 }
 
                 Function function = newFunction.ToEntity();
@@ -108,7 +108,7 @@ namespace cineApi.Endpoints
                 if (newFunction.Date < DateOnly.FromDateTime(currentDate) ||
                     (newFunction.Date == DateOnly.FromDateTime(currentDate) && newFunction.Time <= currentDate.TimeOfDay))
                 {
-                    return Results.BadRequest("The function date and time must be in the future.");
+                    return Results.BadRequest("La fecha y la hora de la función debe ser en el futuro.");
                 }
 
                 var directorFunctionsCount = dbContext.Functions
@@ -117,20 +117,20 @@ namespace cineApi.Endpoints
 
                 if (directorFunctionsCount >= 10)
                 {
-                    return Results.BadRequest("The director already has the maximum number of 10 functions for the day.");
+                    return Results.BadRequest("El director ya tiene el máximo de 10 funciones por día.");
                 }
 
                 var movie = dbContext.Movies.Include(m => m.Director).FirstOrDefault(m => m.Id == newFunction.MovieId);
                 if (movie is null)
                 {
-                    return Results.BadRequest("The movie does not exist.");
+                    return Results.BadRequest("La película no existe.");
                 }
 
                 if (movie.CountryId != 1 && dbContext.Functions
                     .Where(f => f.MovieId == newFunction.MovieId && f.Date == newFunction.Date && f.Id != id)
                     .Count() >= 8)
                 {
-                    return Results.BadRequest("International movies are limited to 8 functions per day.");
+                    return Results.BadRequest("Las películas internacionales tienen un límite de 8 funcones por día.");
                 }
 
                 dbContext.Entry(existingFunction).CurrentValues.SetValues(newFunction.ToEntity(id));

@@ -1,10 +1,10 @@
 GET http://localhost:5206/functions
 
 ###
-GET http://localhost:5206/functions/2
+GET http://localhost:5206/functions/6
 
 ###
-GET http://localhost:5206/functions/movie/2
+GET http://localhost:5206/functions/movie/3
 
 ###
 POST http://localhost:5206/functions
