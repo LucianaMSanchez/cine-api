@@ -34,6 +34,8 @@ public static class FunctionMapping
             Price = function.Price,
             Date = function.Date,
             Time = function.Time,
+            Movie = function.Movie!.Name,
+            Director = function.Movie!.Director.Name
         };
 
     }

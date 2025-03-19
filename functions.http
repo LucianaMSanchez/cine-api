@@ -4,13 +4,17 @@ GET http://localhost:5206/functions
 GET http://localhost:5206/functions/2
 
 ###
+GET http://localhost:5206/functions/movie/2
+
+###
 POST http://localhost:5206/functions
 Content-Type: application/json
 
 {
-"movieId": 1,
+"movieId": 2,
+"directorId": 2,
 "price": 33,
-"date": "2025-03-18",
+"date": "2025-03-19",
 "time": "20:00"
 }
 
@@ -19,7 +23,7 @@ PUT http://localhost:5206/functions/3
 Content-Type: application/json
 
 {
-"movieId": 3,
+"movieId": 5,
 "price": 33,
 "date": "2025-03-18",
 "time": "20:00"

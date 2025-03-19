@@ -1,0 +1,8 @@
+GET http://localhost:5206/movies
+
+###
+GET http://localhost:5206/movies/2
+
+###
+GET http://localhost:5206/movies/country
+

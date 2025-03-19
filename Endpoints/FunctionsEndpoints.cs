@@ -13,38 +13,74 @@ namespace cineApi.Endpoints
             var group = app.MapGroup("functions").WithParameterValidation();
 
             group.MapGet("/", (CineApiContext dbContext) =>
-
                 dbContext.Functions
-                .Include(function => function.Movie)
-                .ThenInclude(movie => movie!.Director)
-                .Select(function => function.ToSummaryDto())
-                .AsNoTracking()
+                    .Include(f => f.Movie)
+                    .ThenInclude(m => m!.Director)
+                    .AsNoTracking()
+                    .ToList()
+                    .GroupBy(f => f.Movie!.Name)
+                    .Select(group => new
+                    {
+                        MovieName = group.Key,
+                        Functions = group.Select(f => f.ToSummaryDto()).ToList()
+                    })
+                    .ToList()
             );
-
 
             group.MapGet("/{id}", (int id, CineApiContext dbContext) =>
             {
-                Function? function = dbContext.Functions.Find(id);
+                var function = dbContext.Functions
+                    .Include(f => f.Movie)
+                    .ThenInclude(m => m!.Director)
+                    .FirstOrDefault(f => f.Id == id);
 
-                if (function is null)
-                {
-                    return Results.NotFound();
-                }
-
-                var movie = dbContext.Movies.Find(function.MovieId);
-                var director = dbContext.Directors.Find(movie?.DirectorId);
-
-                FunctionDto functionDto = function.ToDto();
-                functionDto.Director = director?.Name;
-                functionDto.Movie = movie?.Name;
-
-                return Results.Ok(functionDto);
-
+                return function is null ? Results.NotFound() : Results.Ok(function.ToDto());
             }).WithName("GetFunction");
 
+            group.MapGet("/movie/{movieId}", (int movieId, CineApiContext dbContext) =>
+            {
+                var functions = dbContext.Functions
+                    .Where(f => f.MovieId == movieId)
+                    .Include(f => f.Movie)
+                    .ThenInclude(m => m!.Director)
+                    .Select(f => f.ToSummaryDto())
+                    .AsNoTracking()
+                    .ToList();
+
+                return functions.Count != 0 ? Results.Ok(functions) : Results.NotFound();
+            });
 
             group.MapPost("/", (CreateFunctionDto newFunction, CineApiContext dbContext) =>
             {
+                var currentDate = DateTime.Now;
+                if (newFunction.Date < DateOnly.FromDateTime(currentDate) ||
+                    (newFunction.Date == DateOnly.FromDateTime(currentDate) && newFunction.Time <= currentDate.TimeOfDay))
+                {
+                    return Results.BadRequest("The function date and time must be in the future.");
+                }
+
+                var directorFunctionsCount = dbContext.Functions
+                    .Where(f => f.Movie!.DirectorId == newFunction.DirectorId && f.Date == newFunction.Date)
+                    .Count();
+
+                if (directorFunctionsCount >= 10)
+                {
+                    return Results.BadRequest("The director already has the maximum number of 10 functions for the day.");
+                }
+
+                var movie = dbContext.Movies.Include(m => m.Director).FirstOrDefault(m => m.Id == newFunction.MovieId);
+                if (movie is null)
+                {
+                    return Results.BadRequest("The movie does not exist.");
+                }
+
+                if (movie.CountryId != 1 && dbContext.Functions
+                    .Where(f => f.MovieId == newFunction.MovieId && f.Date == newFunction.Date)
+                    .Count() >= 8)
+                {
+                    return Results.BadRequest("International movies are limited to 8 functions per day.");
+                }
+
                 Function function = newFunction.ToEntity();
                 function.Movie = dbContext.Movies.Find(newFunction.MovieId);
 
@@ -57,8 +93,7 @@ namespace cineApi.Endpoints
                 functionDto.Director = director!.Name;
 
                 return Results.CreatedAtRoute("GetFunction", new { id = function.Id }, functionDto);
-            }
-            );
+            });
 
             group.MapPut("/{id}", (int id, UpdateFunctionDto newFunction, CineApiContext dbContext) =>
             {
@@ -67,6 +102,35 @@ namespace cineApi.Endpoints
                 if (existingFunction is null)
                 {
                     return Results.NotFound();
+                }
+
+                var currentDate = DateTime.Now;
+                if (newFunction.Date < DateOnly.FromDateTime(currentDate) ||
+                    (newFunction.Date == DateOnly.FromDateTime(currentDate) && newFunction.Time <= currentDate.TimeOfDay))
+                {
+                    return Results.BadRequest("The function date and time must be in the future.");
+                }
+
+                var directorFunctionsCount = dbContext.Functions
+                    .Where(f => f.Movie!.DirectorId == newFunction.DirectorId && f.Date == newFunction.Date && f.Id != id)
+                    .Count();
+
+                if (directorFunctionsCount >= 10)
+                {
+                    return Results.BadRequest("The director already has the maximum number of 10 functions for the day.");
+                }
+
+                var movie = dbContext.Movies.Include(m => m.Director).FirstOrDefault(m => m.Id == newFunction.MovieId);
+                if (movie is null)
+                {
+                    return Results.BadRequest("The movie does not exist.");
+                }
+
+                if (movie.CountryId != 1 && dbContext.Functions
+                    .Where(f => f.MovieId == newFunction.MovieId && f.Date == newFunction.Date && f.Id != id)
+                    .Count() >= 8)
+                {
+                    return Results.BadRequest("International movies are limited to 8 functions per day.");
                 }
 
                 dbContext.Entry(existingFunction).CurrentValues.SetValues(newFunction.ToEntity(id));

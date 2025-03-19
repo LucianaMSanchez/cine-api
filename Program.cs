@@ -9,6 +9,7 @@ builder.Services.AddSqlite<CineApiContext>(connString);
 var app = builder.Build();
 
 app.MapFunctionsEndpoints();
+app.MapMoviesEndpoints();
 
 app.MigrateDb();
 
