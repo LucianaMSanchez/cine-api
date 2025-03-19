@@ -1,0 +1,29 @@
+GET http://localhost:5206/functions
+
+###
+GET http://localhost:5206/functions/2
+
+###
+POST http://localhost:5206/functions
+Content-Type: application/json
+
+{
+"movieId": 1,
+"price": 33,
+"date": "2025-03-18",
+"time": "20:00"
+}
+
+###
+PUT http://localhost:5206/functions/3
+Content-Type: application/json
+
+{
+"movieId": 3,
+"price": 33,
+"date": "2025-03-18",
+"time": "20:00"
+}
+
+###
+DELETE http://localhost:5206/functions/1
